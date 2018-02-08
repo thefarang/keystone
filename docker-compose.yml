@@ -1,0 +1,34 @@
+version: "3"
+
+volumes:
+  database:
+
+services:
+
+  mongo2:
+    container_name: mongo2
+    image: mvertes/alpine-mongo:3.4.9-0
+    ports:
+      # Expose port to host machine for debugging
+      - 27017
+    volumes:
+      - database:/data/db
+
+  keystone:
+    container_name: keystone
+    build: .
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - MONGO_URI=${MONGO_URI}
+    volumes:
+      # Make the following directories available to docker so that changes made on the host
+      # are immediately available inside the docker container.
+      - ./package.json:/app/package.json
+      - ./.env:/app/.env
+      - ./src:/app/src
+    command: npm start
+    ports:
+      # Expose port to host machine for debugging
+      - 3000:3000
+    links:
+      - mongo2
